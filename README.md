@@ -1,4 +1,8 @@
-# Zenith For Laravel
+<p align="center">
+    <img src="art/logo.png" alt="Zenith for Laravel">
+    <br>
+    <h1 align="center">Zenith For Laravel</h1>
+</p>
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/smwks/laravel-zenith.svg?style=flat-square)](https://packagist.org/packages/smwks/laravel-zenith)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/smwks/laravel-zenith/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/smwks/laravel-zenith/actions?query=workflow%3Arun-tests+branch%3Amain)
@@ -7,8 +11,6 @@
 **Think Laravel Horizon, but for database-backed queues.** Zenith brings the same real-time visibility and worker management that Horizon provides for Redis — to the `database` queue driver.
 
 If you're running queues out of your database and want a live dashboard, worker process management, and job lifecycle tracking without switching to Redis, Zenith is built for you. See pending, processing, completed, and failed jobs alongside the worker processes handling them. Scale workers up or down, terminate supervisors, retry failures in bulk, and track performance over time — all from your browser, all without leaving your application.
-
-<!-- screenshot: dashboard overview -->
 
 ---
 
@@ -41,8 +43,6 @@ Schedule::command('zenith:monitor')->everyMinute();
 ### Live Dashboard
 A real-time overview of your queue system refreshing every 5 seconds. At a glance: how many workers are active, how many are idle or stuck, jobs pending and completed today, average processing time, throughput (jobs/hour), and failure rate.
 
-<!-- screenshot: dashboard metrics -->
-
 ### Job Visibility Across the Full Lifecycle
 Browse every stage of a job's journey across dedicated tabs:
 
@@ -51,7 +51,7 @@ Browse every stage of a job's journey across dedicated tabs:
 - **Failed** — full exception messages, per-job retry and delete, bulk retry all
 - **Batches** — batch progress bars, pending/failed counts, status at a glance
 
-<!-- screenshot: jobs list tabs -->
+![Jobs list](art/jobs-screenshot.png)
 
 ### Worker Management
 The Workers page shows the full supervisor/child process hierarchy. For each supervisor you see its queue, connection, worker count, total jobs processed, last heartbeat, and uptime. For each child worker you see individual job counts, health status, and a "Stuck" indicator when a heartbeat goes missing.
@@ -61,7 +61,7 @@ From the UI you can:
 - **Scale Down** — remove a child worker gracefully
 - **Terminate** — send a shutdown signal to a supervisor
 
-<!-- screenshot: workers list -->
+![Workers list](art/workers-screenshot.png)
 
 ### Heartbeat-Based Health Monitoring
 Every worker reports a heartbeat on a configurable interval (default: 30 seconds). The `zenith:monitor` command — run every minute via the scheduler — compares last heartbeat times against a configurable stuck threshold (default: 120 seconds). Workers that go silent are marked terminated; jobs held by those workers can be automatically released back to the queue.
