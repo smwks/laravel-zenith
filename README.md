@@ -1,12 +1,12 @@
-# Laravel Zenith
+# Zenith For Laravel
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/smwks/laravel-zenith.svg?style=flat-square)](https://packagist.org/packages/smwks/laravel-zenith)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/smwks/laravel-zenith/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/smwks/laravel-zenith/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/smwks/laravel-zenith.svg?style=flat-square)](https://packagist.org/packages/smwks/laravel-zenith)
 
-**Real-time queue monitoring and worker management for Laravel.** Zenith gives you complete visibility into every job, every worker, and every failure — with the tools to act on what you see.
+**Think Laravel Horizon, but for database-backed queues.** Zenith brings the same real-time visibility and worker management that Horizon provides for Redis — to the `database` queue driver.
 
-Laravel's queue system is powerful, but once jobs are in flight it's a black box. Zenith opens that box: a live dashboard shows pending, processing, completed, and failed jobs alongside the worker processes handling them. You can scale workers up or down, terminate supervisors, retry failures in bulk, and track performance over time — all from your browser, all without leaving your application.
+If you're running queues out of your database and want a live dashboard, worker process management, and job lifecycle tracking without switching to Redis, Zenith is built for you. See pending, processing, completed, and failed jobs alongside the worker processes handling them. Scale workers up or down, terminate supervisors, retry failures in bulk, and track performance over time — all from your browser, all without leaving your application.
 
 <!-- screenshot: dashboard overview -->
 

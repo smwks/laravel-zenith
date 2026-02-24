@@ -1,6 +1,6 @@
 {
     "name": "smwks/laravel-zenith",
-    "description": "Dashboard and code-driven configuration for Laravel queues running in the database.",
+    "description": "Laravel Horizon for database-backed queues — real-time dashboard and worker management for the database queue driver.",
     "keywords": [
         "smwks",
         "laravel",
