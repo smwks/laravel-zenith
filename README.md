@@ -38,6 +38,23 @@ Schedule::command('zenith:monitor')->everyMinute();
 
 ---
 
+## Run A Demo
+
+Spin up a fresh Laravel app with Zenith installed in under a minute:
+
+```bash
+laravel new demo-laravel-zenith
+cd demo-laravel-zenith
+composer require smwks/laravel-zenith
+php artisan vendor:publish --provider="SMWks\LaravelZenith\ZenithServiceProvider"
+php artisan migrate
+php artisan serve
+```
+
+Then browse to [http://localhost:8000/zenith](http://localhost:8000/zenith) to see the dashboard.
+
+---
+
 ## Features
 
 ### Live Dashboard
