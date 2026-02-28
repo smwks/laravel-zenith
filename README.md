@@ -5,7 +5,7 @@
 </p>
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/smwks/laravel-zenith.svg?style=flat-square)](https://packagist.org/packages/smwks/laravel-zenith)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/smwks/laravel-zenith/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/smwks/laravel-zenith/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/smwks/laravel-zenith/run-tests.yml?branch=master&label=tests&style=flat-square)](https://github.com/smwks/laravel-zenith/actions?query=workflow%3Arun-tests+branch%3Amaster)
 [![Total Downloads](https://img.shields.io/packagist/dt/smwks/laravel-zenith.svg?style=flat-square)](https://packagist.org/packages/smwks/laravel-zenith)
 
 **Think Laravel Horizon, but for database-backed queues.** Zenith brings the same real-time visibility and worker management that Horizon provides for Redis — to the `database` queue driver.
