@@ -3,8 +3,8 @@
 namespace SMWks\LaravelZenith\Services;
 
 use Illuminate\Support\Facades\DB;
-use SMWks\LaravelZenith\Models\JobEvent;
-use SMWks\LaravelZenith\Models\JobHistory;
+use SMWks\LaravelZenith\Models\ZenithEvent;
+use SMWks\LaravelZenith\Models\ZenithHistory;
 
 class ZenithJobService
 {
@@ -25,7 +25,7 @@ class ZenithJobService
 
         // Record cancellation event
         if ($uuid) {
-            JobEvent::create([
+            ZenithEvent::create([
                 'job_id' => $jobId,
                 'job_uuid' => $uuid,
                 'event_type' => 'cancelled',
@@ -34,7 +34,7 @@ class ZenithJobService
             ]);
 
             // Move to history
-            JobHistory::create([
+            ZenithHistory::create([
                 'job_id' => $jobId,
                 'uuid' => $uuid,
                 'queue' => $job->queue,
@@ -91,7 +91,7 @@ class ZenithJobService
         $uuid = $payload['uuid'] ?? null;
 
         if ($uuid) {
-            JobEvent::create([
+            ZenithEvent::create([
                 'job_uuid' => $uuid,
                 'event_type' => 'retried',
                 'metadata' => ['retried_from' => 'failed_jobs'],
@@ -200,7 +200,7 @@ class ZenithJobService
         $days = $days ?? config('zenith.retention.completed_jobs', 7);
         $cutoff = now()->subDays($days);
 
-        return JobHistory::where('status', 'completed')
+        return ZenithHistory::where('status', 'completed')
             ->where('completed_at', '<', $cutoff)
             ->delete();
     }
@@ -226,7 +226,7 @@ class ZenithJobService
         $days = $days ?? config('zenith.retention.job_events', 7);
         $cutoff = now()->subDays($days);
 
-        return JobEvent::where('created_at', '<', $cutoff)->delete();
+        return ZenithEvent::where('created_at', '<', $cutoff)->delete();
     }
 
     /**

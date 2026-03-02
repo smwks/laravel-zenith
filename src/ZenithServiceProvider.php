@@ -37,27 +37,25 @@ class ZenithServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        // Publish config
+        // Publish config, views, and migrations
         $this->publishes([
             __DIR__.'/../config/zenith.php' => config_path('zenith.php'),
-        ], 'config');
+        ], 'zenith-config');
+
+        $this->publishes([
+            __DIR__.'/../resources/views' => resource_path('views/vendor/laravel-zenith'),
+        ], 'zenith-views');
+
+        $this->publishes([
+            __DIR__.'/../database/migrations/create_zenith_tables.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_zenith_tables.php'),
+        ], 'zenith-migrations');
 
         // Load views
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'laravel-zenith');
 
-        // Publish views
-        $this->publishes([
-            __DIR__.'/../resources/views' => resource_path('views/vendor/laravel-zenith'),
-        ], 'views');
-
         // Load routes
         $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
         $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
-
-        // Load migrations
-        $this->loadMigrationsFrom([
-            __DIR__.'/../database/migrations/create_zenith_tables.php',
-        ]);
 
         // Register commands
         if ($this->app->runningInConsole()) {

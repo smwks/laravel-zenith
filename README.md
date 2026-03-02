@@ -43,13 +43,31 @@ Schedule::command('zenith:monitor')->everyMinute();
 Spin up a fresh Laravel app with Zenith installed in under a minute:
 
 ```bash
-laravel new demo-laravel-zenith
+# new Laravel app without auth scaffolding since Zenith doesn't require it
+laravel new -n demo-laravel-zenith
 cd demo-laravel-zenith
+
+# install Zenith
 composer require smwks/laravel-zenith
-php artisan vendor:publish --provider="SMWks\LaravelZenith\ZenithServiceProvider"
+
+php artisan vendor:publish --tag="zenith-config"
+# NOTE: now go to update config/zenith.php to disable auth middleware
+
+# publish and run migrations
+php artisan vendor:publish --tag="zenith-migrations"
 php artisan migrate
+
+# start the demo worker (which dispatches test jobs every 10 seconds)
+php artisan zenith:work
+
+# in a separate terminal, start the server
 php artisan serve
 ```
+
+Notes:
+
+- `-n` in `laravel new` skips the default auth scaffolding since Zenith doesn't require it.
+- With the above steps also update `zenith.php` config to remove `auth` from the middleware array.
 
 Then browse to [http://localhost:8000/zenith](http://localhost:8000/zenith) to see the dashboard.
 

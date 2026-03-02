@@ -3,7 +3,7 @@
 namespace SMWks\LaravelZenith\Commands;
 
 use Illuminate\Console\Command;
-use SMWks\LaravelZenith\Models\JobProcess;
+use SMWks\LaravelZenith\Models\ZenithProcess;
 
 class WorkChildCommand extends Command
 {
@@ -43,11 +43,11 @@ class WorkChildCommand extends Command
         return $this->call('queue:work', $this->buildQueueWorkCallOptions());
     }
 
-    protected function registerWorker(int $pid, int $supervisorPid): JobProcess
+    protected function registerWorker(int $pid, int $supervisorPid): ZenithProcess
     {
         $connection = config('queue.default');
 
-        return JobProcess::create([
+        return ZenithProcess::create([
             'type' => 'worker',
             'pid' => $pid,
             'supervisor_pid' => $supervisorPid,

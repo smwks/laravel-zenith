@@ -3,7 +3,7 @@
 namespace SMWks\LaravelZenith\Commands;
 
 use Illuminate\Console\Command;
-use SMWks\LaravelZenith\Models\JobProcess;
+use SMWks\LaravelZenith\Models\ZenithProcess;
 use SMWks\SuperProcess\Child;
 use SMWks\SuperProcess\CreateReason;
 use SMWks\SuperProcess\ExitReason;
@@ -80,12 +80,12 @@ class WorkCommand extends Command
             })
             ->onChildMessage(function (Child $child, array $message) use (&$workers): void {
                 if (isset($message['worker_id'])) {
-                    $workers[$child->pid] = JobProcess::find($message['worker_id']);
+                    $workers[$child->pid] = ZenithProcess::find($message['worker_id']);
                 }
             })
             ->onChildExit(function (Child $child, ExitReason $reason) use ($sp, &$workers): void {
                 $process = $workers[$child->pid]
-                    ?? JobProcess::workerType()->where('pid', $child->pid)->where('hostname', gethostname())->first();
+                    ?? ZenithProcess::workerType()->where('pid', $child->pid)->where('hostname', gethostname())->first();
 
                 $process?->update(['status' => 'terminated', 'current_job_id' => null]);
                 unset($workers[$child->pid]);
@@ -100,7 +100,7 @@ class WorkCommand extends Command
             ->onShutdown(function () use (&$workers, &$supervisor): void {
                 foreach ($workers as $pid => $worker) {
                     $process = $worker
-                        ?? JobProcess::workerType()->where('pid', $pid)->where('hostname', gethostname())->first();
+                        ?? ZenithProcess::workerType()->where('pid', $pid)->where('hostname', gethostname())->first();
                     $process?->update(['status' => 'terminated', 'current_job_id' => null]);
                 }
 
@@ -114,11 +114,11 @@ class WorkCommand extends Command
         return self::SUCCESS;
     }
 
-    protected function registerSupervisor(): JobProcess
+    protected function registerSupervisor(): ZenithProcess
     {
         $connection = config('queue.default');
 
-        return JobProcess::create([
+        return ZenithProcess::create([
             'type' => 'supervisor',
             'name' => $this->option('name'),
             'pid' => getmypid(),

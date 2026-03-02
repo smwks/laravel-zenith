@@ -7,11 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class JobHistory extends Model
+class ZenithHistory extends Model
 {
     use HasUlids;
-
-    protected $table = 'zenith_history';
 
     protected $fillable = [
         'job_id',
@@ -35,6 +33,13 @@ class JobHistory extends Model
         'payload' => 'array',
     ];
 
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        $this->table = config('zenith.table_names.history') ?: parent::getTable();
+    }
+
     public function getConnectionName()
     {
         return config('zenith.database_connection') ?? parent::getConnectionName();
@@ -42,12 +47,12 @@ class JobHistory extends Model
 
     public function worker(): BelongsTo
     {
-        return $this->belongsTo(JobProcess::class, 'worker_id');
+        return $this->belongsTo(ZenithProcess::class, 'worker_id');
     }
 
     public function events(): HasMany
     {
-        return $this->hasMany(JobEvent::class, 'job_uuid', 'uuid');
+        return $this->hasMany(ZenithEvent::class, 'job_uuid', 'uuid');
     }
 
     public function getProcessingTimeAttribute(): ?string

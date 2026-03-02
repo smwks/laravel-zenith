@@ -4,16 +4,16 @@ namespace SMWks\LaravelZenith\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
-use SMWks\LaravelZenith\Models\JobProcess;
+use SMWks\LaravelZenith\Models\ZenithProcess;
 
 class WorkersController extends Controller
 {
     public function index(): JsonResponse
     {
-        $workers = JobProcess::workerType()->with('jobHistory')
+        $workers = ZenithProcess::workerType()->with('jobHistory')
             ->orderBy('started_at', 'desc')
             ->get()
-            ->map(function (JobProcess $worker) {
+            ->map(function (ZenithProcess $worker) {
                 return [
                     'id' => $worker->id,
                     'pid' => $worker->pid,
@@ -42,7 +42,7 @@ class WorkersController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $worker = JobProcess::workerType()->with(['jobHistory', 'jobEvents'])
+        $worker = ZenithProcess::workerType()->with(['jobHistory', 'jobEvents'])
             ->findOrFail($id);
 
         return response()->json([

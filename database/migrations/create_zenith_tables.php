@@ -8,7 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('zenith_processes', function (Blueprint $table) {
+        $processesTable = config('zenith.table_names.processes', 'zenith_processes');
+        $eventsTable = config('zenith.table_names.events', 'zenith_events');
+        $historyTable = config('zenith.table_names.history', 'zenith_history');
+
+        Schema::create($processesTable, function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->enum('type', ['supervisor', 'worker'])->default('worker');
             $table->string('name')->nullable();
@@ -31,7 +35,7 @@ return new class extends Migration
             $table->index(['queue', 'status']);
         });
 
-        Schema::create('zenith_events', function (Blueprint $table) {
+        Schema::create($eventsTable, function (Blueprint $table) use ($processesTable) {
             $table->ulid('id')->primary();
             $table->unsignedBigInteger('job_id')->nullable()->comment('References jobs.id or jobs_history.id');
             $table->uuid('job_uuid')->index();
@@ -42,10 +46,10 @@ return new class extends Migration
 
             $table->index(['job_uuid', 'created_at']);
             $table->index(['event_type', 'created_at']);
-            $table->foreign('worker_id')->references('id')->on('zenith_processes')->onDelete('set null');
+            $table->foreign('worker_id')->references('id')->on($processesTable)->onDelete('set null');
         });
 
-        Schema::create('zenith_history', function (Blueprint $table) {
+        Schema::create($historyTable, function (Blueprint $table) use ($processesTable) {
             $table->ulid('id')->primary();
             $table->unsignedBigInteger('job_id')->nullable()->comment('References jobs.id before deletion');
             $table->uuid('uuid')->index();
@@ -63,7 +67,7 @@ return new class extends Migration
 
             $table->index(['status', 'completed_at']);
             $table->index(['queue', 'status']);
-            $table->foreign('worker_id')->references('id')->on('zenith_processes')->onDelete('set null');
+            $table->foreign('worker_id')->references('id')->on($processesTable)->onDelete('set null');
         });
     }
 };

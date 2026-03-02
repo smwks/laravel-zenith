@@ -6,11 +6,9 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class JobEvent extends Model
+class ZenithEvent extends Model
 {
     use HasUlids;
-
-    protected $table = 'zenith_events';
 
     public $timestamps = false;
 
@@ -28,6 +26,13 @@ class JobEvent extends Model
         'created_at' => 'datetime',
     ];
 
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        $this->table = config('zenith.table_names.events') ?: parent::getTable();
+    }
+
     public function getConnectionName()
     {
         return config('zenith.database_connection') ?? parent::getConnectionName();
@@ -35,12 +40,12 @@ class JobEvent extends Model
 
     public function worker(): BelongsTo
     {
-        return $this->belongsTo(JobProcess::class, 'worker_id');
+        return $this->belongsTo(ZenithProcess::class, 'worker_id');
     }
 
     public function jobHistory(): BelongsTo
     {
-        return $this->belongsTo(JobHistory::class, 'job_uuid', 'uuid');
+        return $this->belongsTo(ZenithHistory::class, 'job_uuid', 'uuid');
     }
 
     public function scopeForJob($query, string $uuid)

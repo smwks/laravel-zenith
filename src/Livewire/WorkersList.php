@@ -4,7 +4,7 @@ namespace SMWks\LaravelZenith\Livewire;
 
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use SMWks\LaravelZenith\Models\JobProcess;
+use SMWks\LaravelZenith\Models\ZenithProcess;
 
 class WorkersList extends Component
 {
@@ -14,8 +14,8 @@ class WorkersList extends Component
     public function render()
     {
         $supervisors = $this->tab === 'active'
-            ? JobProcess::supervisorType()->active()->with('childWorkers')->orderBy('started_at', 'desc')->get()
-            : JobProcess::supervisorType()->where('status', 'terminated')->with('childWorkers')->orderBy('started_at', 'desc')->get();
+            ? ZenithProcess::supervisorType()->active()->with('childWorkers')->orderBy('started_at', 'desc')->get()
+            : ZenithProcess::supervisorType()->where('status', 'terminated')->with('childWorkers')->orderBy('started_at', 'desc')->get();
 
         return view('laravel-zenith::livewire.workers-list', [
             'supervisors' => $supervisors,
@@ -24,7 +24,7 @@ class WorkersList extends Component
 
     public function scaleUp(string $processId): void
     {
-        $process = JobProcess::find($processId);
+        $process = ZenithProcess::find($processId);
         $actions = $process->heartbeat_actions ?? [];
         $actions[] = 'scale_up';
         $process->update(['heartbeat_actions' => $actions]);
@@ -32,7 +32,7 @@ class WorkersList extends Component
 
     public function scaleDown(string $processId): void
     {
-        $process = JobProcess::find($processId);
+        $process = ZenithProcess::find($processId);
         $actions = $process->heartbeat_actions ?? [];
         $actions[] = 'scale_down';
         $process->update(['heartbeat_actions' => $actions]);
@@ -40,7 +40,7 @@ class WorkersList extends Component
 
     public function terminate(string $processId): void
     {
-        $process = JobProcess::find($processId);
+        $process = ZenithProcess::find($processId);
         $actions = $process->heartbeat_actions ?? [];
         $actions[] = 'terminate';
         $process->update(['heartbeat_actions' => $actions]);

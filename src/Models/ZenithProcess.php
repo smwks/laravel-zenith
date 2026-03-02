@@ -6,11 +6,9 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class JobProcess extends Model
+class ZenithProcess extends Model
 {
     use HasUlids;
-
-    protected $table = 'zenith_processes';
 
     protected $fillable = [
         'type',
@@ -37,6 +35,13 @@ class JobProcess extends Model
         'heartbeat_actions' => 'array',
     ];
 
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        $this->table = config('zenith.table_names.processes') ?: parent::getTable();
+    }
+
     public function getConnectionName()
     {
         return config('zenith.database_connection') ?? parent::getConnectionName();
@@ -44,17 +49,17 @@ class JobProcess extends Model
 
     public function childWorkers(): HasMany
     {
-        return $this->hasMany(JobProcess::class, 'supervisor_pid', 'pid');
+        return $this->hasMany(ZenithProcess::class, 'supervisor_pid', 'pid');
     }
 
     public function jobHistory(): HasMany
     {
-        return $this->hasMany(JobHistory::class, 'worker_id');
+        return $this->hasMany(ZenithHistory::class, 'worker_id');
     }
 
     public function jobEvents(): HasMany
     {
-        return $this->hasMany(JobEvent::class, 'worker_id');
+        return $this->hasMany(ZenithEvent::class, 'worker_id');
     }
 
     public function isHealthy(): bool

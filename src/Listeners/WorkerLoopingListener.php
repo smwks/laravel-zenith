@@ -3,7 +3,7 @@
 namespace SMWks\LaravelZenith\Listeners;
 
 use Illuminate\Queue\Events\Looping;
-use SMWks\LaravelZenith\Models\JobProcess;
+use SMWks\LaravelZenith\Models\ZenithProcess;
 
 class WorkerLoopingListener
 {
@@ -22,7 +22,7 @@ class WorkerLoopingListener
             return;
         }
 
-        $worker = JobProcess::where('pid', getmypid())
+        $worker = ZenithProcess::where('pid', getmypid())
             ->where('hostname', gethostname())
             ->whereIn('status', ['idle', 'working'])
             ->first();
@@ -33,7 +33,7 @@ class WorkerLoopingListener
 
         $worker->update(['last_heartbeat_at' => now()]);
 
-        JobProcess::where('pid', $worker->supervisor_pid)
+        ZenithProcess::where('pid', $worker->supervisor_pid)
             ->where('hostname', $worker->hostname)
             ->update(['last_heartbeat_at' => now()]);
 

@@ -3,9 +3,9 @@
 namespace SMWks\LaravelZenith\Services;
 
 use Illuminate\Support\Facades\DB;
-use SMWks\LaravelZenith\Models\JobEvent;
-use SMWks\LaravelZenith\Models\JobHistory;
-use SMWks\LaravelZenith\Models\JobProcess;
+use SMWks\LaravelZenith\Models\ZenithEvent;
+use SMWks\LaravelZenith\Models\ZenithHistory;
+use SMWks\LaravelZenith\Models\ZenithProcess;
 
 class MetricsService
 {
@@ -21,10 +21,10 @@ class MetricsService
     public function getWorkerMetrics(): array
     {
         return [
-            'active' => JobProcess::workerType()->active()->count(),
-            'working' => JobProcess::workerType()->where('status', 'working')->count(),
-            'idle' => JobProcess::workerType()->where('status', 'idle')->count(),
-            'stuck' => JobProcess::workerType()->stuck()->count(),
+            'active' => ZenithProcess::workerType()->active()->count(),
+            'working' => ZenithProcess::workerType()->where('status', 'working')->count(),
+            'idle' => ZenithProcess::workerType()->where('status', 'idle')->count(),
+            'stuck' => ZenithProcess::workerType()->stuck()->count(),
         ];
     }
 
@@ -34,8 +34,8 @@ class MetricsService
 
         return [
             'pending' => DB::table('jobs')->count(),
-            'processing' => JobProcess::workerType()->where('status', 'working')->count(),
-            'completed_today' => JobHistory::where('status', 'completed')
+            'processing' => ZenithProcess::workerType()->where('status', 'working')->count(),
+            'completed_today' => ZenithHistory::where('status', 'completed')
                 ->whereDate('completed_at', $now->toDateString())
                 ->count(),
             'failed_today' => DB::table('failed_jobs')
@@ -47,7 +47,7 @@ class MetricsService
 
     public function getPerformanceMetrics(): array
     {
-        $completedToday = JobHistory::where('status', 'completed')
+        $completedToday = ZenithHistory::where('status', 'completed')
             ->whereDate('completed_at', now()->toDateString())
             ->get();
 
@@ -66,7 +66,7 @@ class MetricsService
     {
         $oneHourAgo = now()->subHour();
 
-        $completed = JobEvent::where('event_type', 'completed')
+        $completed = ZenithEvent::where('event_type', 'completed')
             ->where('created_at', '>=', $oneHourAgo)
             ->count();
 
@@ -77,7 +77,7 @@ class MetricsService
     {
         $today = now()->toDateString();
 
-        $completed = JobHistory::where('status', 'completed')
+        $completed = ZenithHistory::where('status', 'completed')
             ->whereDate('completed_at', $today)
             ->count();
 

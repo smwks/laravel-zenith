@@ -3,8 +3,8 @@
 namespace SMWks\LaravelZenith\Listeners;
 
 use Illuminate\Queue\Events\JobFailed;
-use SMWks\LaravelZenith\Models\JobEvent;
-use SMWks\LaravelZenith\Models\JobProcess;
+use SMWks\LaravelZenith\Models\ZenithEvent;
+use SMWks\LaravelZenith\Models\ZenithProcess;
 
 class JobFailedListener
 {
@@ -21,12 +21,12 @@ class JobFailedListener
             return;
         }
 
-        $worker = JobProcess::where('pid', getmypid())
+        $worker = ZenithProcess::where('pid', getmypid())
             ->where('hostname', gethostname())
             ->whereIn('status', ['idle', 'working'])
             ->first();
 
-        $startEvent = JobEvent::where('job_uuid', $uuid)
+        $startEvent = ZenithEvent::where('job_uuid', $uuid)
             ->where('event_type', 'started')
             ->orderBy('created_at', 'desc')
             ->first();
@@ -35,7 +35,7 @@ class JobFailedListener
             ? $startEvent->created_at->diffInMilliseconds(now())
             : null;
 
-        JobEvent::create([
+        ZenithEvent::create([
             'job_id' => $event->job->getJobId(),
             'job_uuid' => $uuid,
             'event_type' => 'failed',

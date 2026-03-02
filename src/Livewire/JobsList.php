@@ -10,7 +10,7 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 use SMWks\LaravelZenith\Jobs\ZenithTestJob;
-use SMWks\LaravelZenith\Models\JobHistory;
+use SMWks\LaravelZenith\Models\ZenithHistory;
 use SMWks\LaravelZenith\Services\ZenithJobService;
 
 class JobsList extends Component
@@ -62,7 +62,7 @@ class JobsList extends Component
     public function render()
     {
         $jobs = match ($this->tab) {
-            'completed' => JobHistory::completed()->orderBy('completed_at', 'desc')->paginate(15),
+            'completed' => ZenithHistory::completed()->orderBy('completed_at', 'desc')->paginate(15),
             'failed' => DB::table('failed_jobs')
                 ->when($this->queue, fn ($q) => $q->where('queue', $this->queue))
                 ->orderBy('failed_at', 'desc')->paginate(15),

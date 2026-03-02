@@ -16,6 +16,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Table Names
+    |--------------------------------------------------------------------------
+    |
+    | Customize the names of the database tables used by Zenith. This is
+    | useful if you need to avoid table name collisions or prefer a
+    | different naming convention.
+    |
+    */
+    'table_names' => [
+        'processes' => 'zenith_processes',
+        'history' => 'zenith_history',
+        'events' => 'zenith_events',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Route Configuration
     |--------------------------------------------------------------------------
     |

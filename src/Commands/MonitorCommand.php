@@ -4,7 +4,7 @@ namespace SMWks\LaravelZenith\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use SMWks\LaravelZenith\Models\JobProcess;
+use SMWks\LaravelZenith\Models\ZenithProcess;
 use SMWks\LaravelZenith\Services\ZenithJobService;
 
 class MonitorCommand extends Command
@@ -22,7 +22,7 @@ class MonitorCommand extends Command
 
         $this->info('Monitoring workers...');
 
-        $stuckWorkers = JobProcess::workerType()->stuck()->get();
+        $stuckWorkers = ZenithProcess::workerType()->stuck()->get();
 
         if ($stuckWorkers->isEmpty()) {
             $this->info('All workers are healthy.');
@@ -39,7 +39,7 @@ class MonitorCommand extends Command
         return self::SUCCESS;
     }
 
-    protected function handleStuckWorker(JobProcess $worker, ZenithJobService $jobService): void
+    protected function handleStuckWorker(ZenithProcess $worker, ZenithJobService $jobService): void
     {
         $this->line("Worker #{$worker->id} (PID: {$worker->pid}) on {$worker->hostname} is stuck");
         $this->line("  Last heartbeat: {$worker->last_heartbeat_at->diffForHumans()}");
@@ -60,7 +60,7 @@ class MonitorCommand extends Command
         }
     }
 
-    protected function handleStuckJob(JobProcess $worker, ZenithJobService $jobService): void
+    protected function handleStuckJob(ZenithProcess $worker, ZenithJobService $jobService): void
     {
         $this->line("  Job #{$worker->current_job_id} is stuck");
 
@@ -88,7 +88,7 @@ class MonitorCommand extends Command
         }
     }
 
-    protected function isProcessDead(JobProcess $worker): bool
+    protected function isProcessDead(ZenithProcess $worker): bool
     {
         if (gethostname() !== $worker->hostname) {
             return false;

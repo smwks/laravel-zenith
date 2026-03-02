@@ -6,7 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use SMWks\LaravelZenith\Models\JobHistory;
+use SMWks\LaravelZenith\Models\ZenithHistory;
 use SMWks\LaravelZenith\Services\ZenithJobService;
 
 class JobsController extends Controller
@@ -54,7 +54,7 @@ class JobsController extends Controller
 
     public function history(Request $request): JsonResponse
     {
-        $query = JobHistory::with('worker');
+        $query = ZenithHistory::with('worker');
 
         if ($status = $request->get('status')) {
             $query->where('status', $status);
