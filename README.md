@@ -51,7 +51,11 @@ cd demo-laravel-zenith
 composer require smwks/laravel-zenith
 
 php artisan vendor:publish --tag="zenith-config"
-# NOTE: now go to update config/zenith.php to disable auth middleware
+
+# **NOTE:** now go to update config/zenith.php to disable auth middleware
+# 'route' => [
+#     'middleware' => ['web'], // remove 'auth' since this is a demo
+# ],
 
 # publish and run migrations
 php artisan vendor:publish --tag="zenith-migrations"
