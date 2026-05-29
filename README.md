@@ -96,9 +96,19 @@ Browse every stage of a job's journey across dedicated tabs:
 The Workers page shows the full supervisor/child process hierarchy. For each supervisor you see its queue, connection, worker count, total jobs processed, last heartbeat, and uptime. For each child worker you see individual job counts, health status, and a "Stuck" indicator when a heartbeat goes missing.
 
 From the UI you can:
-- **Scale Up** — spawn an additional child worker under a supervisor
-- **Scale Down** — remove a child worker gracefully
+- **Scale Up** — spawn an additional child worker under a supervisor _(manual balance only)_
+- **Scale Down** — remove a child worker gracefully _(manual balance only)_
 - **Terminate** — send a shutdown signal to a supervisor
+
+### Supervisor Groups & Balance Strategies
+
+Each `zenith:work` invocation is tied to a named supervisor group defined in `config/zenith.php`. Groups configure the queue, connection, and — importantly — the balance strategy:
+
+| Strategy | Behaviour |
+|---|---|
+| `fixed` | Workers start at `min_workers` and stay there. Scale Up/Down hidden in the UI. Ideal for Kubernetes pods or any environment where the process supervisor controls scale. |
+| `manual` | Workers start at `min_workers`. Scale Up/Down buttons are visible in the dashboard. Operator-driven scaling within `min_workers`/`max_workers` bounds. |
+| `automatic` | Workers start at `min_workers` and scale to demand on every heartbeat tick. Scale target is `ceil(pending_jobs / jobs_per_worker)`, clamped to `min_workers`/`max_workers`. Scales up to target immediately; scales down one step per tick only when the queue is empty. |
 
 ![Workers list](art/workers-screenshot.png)
 
@@ -175,8 +185,8 @@ php artisan zenith:work --queue=default --name=my-worker
 
 | Option | Default | Description |
 |---|---|---|
-| `--name` | `default` | Worker name shown in the dashboard |
-| `--queue` | | Comma-separated queue names |
+| `--name` | `default` | Supervisor group name — must match a key in `config('zenith.supervisors')` to pick up its balance strategy and worker bounds |
+| `--queue` | | Comma-separated queue names (overrides the group's configured queue) |
 | `--memory` | `128` | Memory limit in MB |
 | `--timeout` | `60` | Max seconds a job may run |
 | `--sleep` | `3` | Seconds to sleep when queue is empty |
@@ -224,8 +234,21 @@ return [
     'enabled' => env('ZENITH_ENABLED', true),
 
     'route' => [
+        'domain'     => env('ZENITH_ROUTE_DOMAIN', null),      // restrict dashboard to a specific domain
         'prefix'     => env('ZENITH_ROUTE_PREFIX', 'zenith'),
         'middleware' => ['web', 'auth'],
+    ],
+
+    // Named supervisor groups — each `zenith:work --name=X` invocation reads from its group
+    'supervisors' => [
+        'default' => [
+            'connection'      => env('QUEUE_CONNECTION', 'database'),
+            'queue'           => 'default',
+            'balance'         => env('ZENITH_BALANCE', 'fixed'),      // fixed | manual | automatic
+            'min_workers'     => env('ZENITH_MIN_WORKERS', 1),
+            'max_workers'     => env('ZENITH_MAX_WORKERS', 1),
+            'jobs_per_worker' => env('ZENITH_JOBS_PER_WORKER', 5),    // automatic balance only
+        ],
     ],
 
     // How often workers report their heartbeat (seconds)
@@ -247,6 +270,33 @@ return [
     'database_connection' => env('ZENITH_DB_CONNECTION', null),
 
 ];
+```
+
+Multiple named groups are supported — useful when different queues need different strategies:
+
+```php
+'supervisors' => [
+    'default' => [
+        'queue'       => 'default',
+        'balance'     => 'fixed',
+        'min_workers' => 2,
+        'max_workers' => 2,
+    ],
+    'high-priority' => [
+        'queue'           => 'high,default',
+        'balance'         => 'automatic',
+        'min_workers'     => 1,
+        'max_workers'     => 8,
+        'jobs_per_worker' => 10,
+    ],
+],
+```
+
+Then start each group as a separate process:
+
+```bash
+php artisan zenith:work --name=default
+php artisan zenith:work --name=high-priority
 ```
 
 ---
