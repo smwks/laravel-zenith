@@ -5,7 +5,10 @@ use SMWks\LaravelZenith\Http\Controllers\Api\JobsController;
 use SMWks\LaravelZenith\Http\Controllers\Api\MetricsController;
 use SMWks\LaravelZenith\Http\Controllers\Api\WorkersController;
 
-Route::prefix('zenith/api')->middleware(config('zenith.route.middleware', ['web', 'auth']))->group(function () {
+Route::domain(config('zenith.route.domain'))
+    ->prefix(config('zenith.route.prefix', 'zenith').'/api')
+    ->middleware(config('zenith.route.middleware', ['web', 'auth']))
+    ->group(function () {
     // Workers
     Route::get('/workers', [WorkersController::class, 'index'])->name('zenith.api.workers.index');
     Route::get('/workers/{id}', [WorkersController::class, 'show'])->name('zenith.api.workers.show');

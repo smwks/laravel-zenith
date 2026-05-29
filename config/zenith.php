@@ -39,6 +39,7 @@ return [
     |
     */
     'route' => [
+        'domain' => env('ZENITH_ROUTE_DOMAIN', null),
         'prefix' => env('ZENITH_ROUTE_PREFIX', 'zenith'),
         'middleware' => ['web', 'auth'],
     ],
