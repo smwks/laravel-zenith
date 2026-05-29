@@ -46,6 +46,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Supervisor Groups
+    |--------------------------------------------------------------------------
+    |
+    | Define named supervisor groups. Each group configures the queue(s),
+    | balance strategy, and worker bounds for a `zenith:work --name=X` invocation.
+    |
+    | balance: fixed     - starts at min_workers, no scaling, Scale Up/Down hidden in UI
+    | balance: manual    - starts at min_workers, operator scales via dashboard
+    | balance: automatic - scales to demand within min/max based on pending jobs
+    |
+    */
+    'supervisors' => [
+        'default' => [
+            'connection' => env('QUEUE_CONNECTION', 'database'),
+            'queue' => 'default',
+            'balance' => env('ZENITH_BALANCE', 'fixed'),
+            'min_workers' => env('ZENITH_MIN_WORKERS', 1),
+            'max_workers' => env('ZENITH_MAX_WORKERS', 1),
+            'jobs_per_worker' => env('ZENITH_JOBS_PER_WORKER', 5),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Worker Heartbeat Interval
     |--------------------------------------------------------------------------
     |
