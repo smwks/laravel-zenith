@@ -80,6 +80,21 @@ class WorkCommand extends Command
                     }
 
                     $supervisor?->update(['heartbeat_actions' => null]);
+
+                    if ($balance === 'automatic') {
+                        $pendingJobs = Queue::connection($resolvedConnection)->size($resolvedQueue ?? 'default');
+                        $activeWorkers = count($workers);
+                        $targetWorkers = max($minWorkers, min($maxWorkers, (int) ceil($pendingJobs / $jobsPerWorker)));
+
+                        if ($targetWorkers > $activeWorkers) {
+                            $stepsUp = $targetWorkers - $activeWorkers;
+                            for ($i = 0; $i < $stepsUp; $i++) {
+                                $sp->scaleLimits($minWorkers, $maxWorkers)->scaleUp();
+                            }
+                        } elseif ($targetWorkers < $activeWorkers && $pendingJobs === 0) {
+                            $sp->scaleLimits($minWorkers, $maxWorkers)->scaleDown();
+                        }
+                    }
                 }
             )
             ->onChildCreate(function (Child $child, CreateReason $reason) use (&$workers): void {
