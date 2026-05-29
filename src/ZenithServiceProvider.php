@@ -20,6 +20,10 @@ use SMWks\LaravelZenith\Listeners\JobFailedListener;
 use SMWks\LaravelZenith\Listeners\JobProcessedListener;
 use SMWks\LaravelZenith\Listeners\JobProcessingListener;
 use SMWks\LaravelZenith\Listeners\WorkerLoopingListener;
+use SMWks\LaravelZenith\Livewire\Dashboard;
+use SMWks\LaravelZenith\Livewire\FailedJobsList;
+use SMWks\LaravelZenith\Livewire\JobsList;
+use SMWks\LaravelZenith\Livewire\WorkersList;
 use SMWks\LaravelZenith\Services\MetricsService;
 use SMWks\LaravelZenith\Services\ZenithJobService;
 
@@ -68,10 +72,10 @@ class ZenithServiceProvider extends ServiceProvider
         }
 
         // Register Livewire components
-        Livewire::component('zenith-dashboard', \SMWks\LaravelZenith\Livewire\Dashboard::class);
-        Livewire::component('zenith-workers-list', \SMWks\LaravelZenith\Livewire\WorkersList::class);
-        Livewire::component('zenith-jobs-list', \SMWks\LaravelZenith\Livewire\JobsList::class);
-        Livewire::component('zenith-failed-jobs-list', \SMWks\LaravelZenith\Livewire\FailedJobsList::class);
+        Livewire::component('zenith-dashboard', Dashboard::class);
+        Livewire::component('zenith-workers-list', WorkersList::class);
+        Livewire::component('zenith-jobs-list', JobsList::class);
+        Livewire::component('zenith-failed-jobs-list', FailedJobsList::class);
 
         // Register event listeners
         if (config('zenith.enabled', true)) {

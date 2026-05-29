@@ -164,12 +164,12 @@ class WorkCommand extends Command
             'status' => 'idle',
             'metadata' => [
                 'memory_limit' => $this->option('memory'),
-                'timeout'      => $this->option('timeout'),
-                'sleep'        => $this->option('sleep'),
-                'tries'        => $this->option('tries'),
-                'balance'      => $balance,
-                'min_workers'  => $minWorkers,
-                'max_workers'  => $maxWorkers,
+                'timeout' => $this->option('timeout'),
+                'sleep' => $this->option('sleep'),
+                'tries' => $this->option('tries'),
+                'balance' => $balance,
+                'min_workers' => $minWorkers,
+                'max_workers' => $maxWorkers,
             ],
         ]);
     }

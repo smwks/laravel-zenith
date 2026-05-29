@@ -3,6 +3,7 @@
 namespace SMWks\LaravelZenith\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use SMWks\LaravelZenith\ZenithServiceProvider;
 
@@ -20,7 +21,7 @@ class TestCase extends Orchestra
     protected function getPackageProviders($app)
     {
         return [
-            \Livewire\LivewireServiceProvider::class,
+            LivewireServiceProvider::class,
             ZenithServiceProvider::class,
         ];
     }
