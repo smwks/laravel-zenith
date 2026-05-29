@@ -3,6 +3,7 @@
 namespace SMWks\LaravelZenith\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Queue;
 use SMWks\LaravelZenith\Models\ZenithProcess;
 use SMWks\SuperProcess\Child;
 use SMWks\SuperProcess\CreateReason;
@@ -38,17 +39,23 @@ class WorkCommand extends Command
             return self::FAILURE;
         }
 
+        $config = $this->resolveSupervisorConfig();
+        $balance = $config['balance'];
+        $minWorkers = $config['minWorkers'];
+        $maxWorkers = $config['maxWorkers'];
+        $jobsPerWorker = $config['jobsPerWorker'];
+        $resolvedQueue = $config['queue'];
+        $resolvedConnection = $config['connection'];
+
         $supervisor = null;
         $workers = [];
-        $minWorkers = 1;
-        $maxWorkers = 1;
         $sp = new SuperProcess;
 
-        $sp->command($this->buildQueueWorkCommand())
-            ->scaleLimits(min: 1, max: 1)
+        $sp->command($this->buildQueueWorkCommand($resolvedQueue))
+            ->scaleLimits(min: $minWorkers, max: $maxWorkers)
             ->heartbeat(
                 intervalSeconds: config('zenith.heartbeat_interval', 30),
-                callback: function () use (&$supervisor, &$workers, &$minWorkers, &$maxWorkers, $sp): void {
+                callback: function () use (&$supervisor, &$workers, &$minWorkers, &$maxWorkers, $balance, $jobsPerWorker, $resolvedQueue, $resolvedConnection, $sp): void {
                     $supervisor?->update(['last_heartbeat_at' => now()]);
 
                     foreach ($workers as $worker) {
@@ -58,11 +65,11 @@ class WorkCommand extends Command
                     $supervisor?->refresh();
 
                     foreach ($supervisor?->heartbeat_actions ?? [] as $action) {
-                        if ($action === 'scale_up') {
+                        if ($action === 'scale_up' && $balance === 'manual') {
                             $minWorkers++;
                             $maxWorkers++;
                             $sp->scaleLimits($minWorkers, $maxWorkers)->scaleUp();
-                        } elseif ($action === 'scale_down') {
+                        } elseif ($action === 'scale_down' && $balance === 'manual') {
                             $minWorkers = max(0, $minWorkers - 1);
                             $maxWorkers = max(0, $maxWorkers - 1);
                             $sp->scaleLimits($minWorkers, $maxWorkers)->scaleDown();
@@ -107,43 +114,57 @@ class WorkCommand extends Command
                 $supervisor?->update(['status' => 'terminated', 'current_job_id' => null]);
             });
 
-        $supervisor = $this->registerSupervisor();
+        $supervisor = $this->registerSupervisor($balance, $minWorkers, $maxWorkers, $resolvedQueue, $resolvedConnection);
 
         $sp->run();
 
         return self::SUCCESS;
     }
 
-    protected function registerSupervisor(): ZenithProcess
+    protected function resolveSupervisorConfig(): array
     {
-        $connection = config('queue.default');
+        $supervisorConfig = config("zenith.supervisors.{$this->option('name')}", []);
+        $balance = $supervisorConfig['balance'] ?? 'fixed';
+        $minWorkers = (int) ($supervisorConfig['min_workers'] ?? 1);
+        $maxWorkers = ($balance === 'fixed') ? $minWorkers : (int) ($supervisorConfig['max_workers'] ?? 1);
+        $jobsPerWorker = (int) ($supervisorConfig['jobs_per_worker'] ?? 5);
+        $queue = $this->option('queue') ?: ($supervisorConfig['queue'] ?? null);
+        $connection = $supervisorConfig['connection'] ?? config('queue.default');
 
+        return compact('balance', 'minWorkers', 'maxWorkers', 'jobsPerWorker', 'queue', 'connection');
+    }
+
+    protected function registerSupervisor(string $balance, int $minWorkers, int $maxWorkers, ?string $resolvedQueue, string $resolvedConnection): ZenithProcess
+    {
         return ZenithProcess::create([
             'type' => 'supervisor',
             'name' => $this->option('name'),
             'pid' => getmypid(),
             'supervisor_pid' => null,
             'hostname' => gethostname(),
-            'queue' => $this->option('queue') ?: config("queue.connections.{$connection}.queue", 'default'),
-            'connection' => $connection,
+            'queue' => $resolvedQueue ?: config("queue.connections.{$resolvedConnection}.queue", 'default'),
+            'connection' => $resolvedConnection,
             'started_at' => now(),
             'last_heartbeat_at' => now(),
             'status' => 'idle',
             'metadata' => [
                 'memory_limit' => $this->option('memory'),
-                'timeout' => $this->option('timeout'),
-                'sleep' => $this->option('sleep'),
-                'tries' => $this->option('tries'),
+                'timeout'      => $this->option('timeout'),
+                'sleep'        => $this->option('sleep'),
+                'tries'        => $this->option('tries'),
+                'balance'      => $balance,
+                'min_workers'  => $minWorkers,
+                'max_workers'  => $maxWorkers,
             ],
         ]);
     }
 
-    protected function buildQueueWorkCommand(): string
+    protected function buildQueueWorkCommand(?string $resolvedQueue = null): string
     {
         $args = [PHP_BINARY, base_path('artisan'), 'zenith:child-work', '--supervisor-pid='.getmypid()];
 
-        if ($this->option('queue')) {
-            $args[] = '--queue='.$this->option('queue');
+        if ($resolvedQueue) {
+            $args[] = '--queue='.$resolvedQueue;
         }
 
         foreach ([
