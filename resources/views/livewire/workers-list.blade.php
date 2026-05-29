@@ -77,12 +77,14 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 @if($tab === 'active')
                                     <div class="flex space-x-2">
-                                        <button wire:click="scaleUp('{{ $supervisor->id }}')" class="px-2 py-1 text-xs font-medium rounded bg-indigo-100 text-indigo-700 hover:bg-indigo-200">
-                                            Scale Up
-                                        </button>
-                                        <button wire:click="scaleDown('{{ $supervisor->id }}')" class="px-2 py-1 text-xs font-medium rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200">
-                                            Scale Down
-                                        </button>
+                                        @if(($supervisor->metadata['balance'] ?? 'fixed') === 'manual')
+                                            <button wire:click="scaleUp('{{ $supervisor->id }}')" class="px-2 py-1 text-xs font-medium rounded bg-indigo-100 text-indigo-700 hover:bg-indigo-200">
+                                                Scale Up
+                                            </button>
+                                            <button wire:click="scaleDown('{{ $supervisor->id }}')" class="px-2 py-1 text-xs font-medium rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200">
+                                                Scale Down
+                                            </button>
+                                        @endif
                                         <button wire:click="terminate('{{ $supervisor->id }}')" class="px-2 py-1 text-xs font-medium rounded bg-red-100 text-red-700 hover:bg-red-200">
                                             Terminate
                                         </button>

@@ -52,3 +52,33 @@ it('does not append scale_down action for fixed balance supervisor', function ()
 
     expect($supervisor->fresh()->heartbeat_actions)->toBeNull();
 });
+
+it('shows scale buttons for manual balance supervisor', function () {
+    ZenithProcess::factory()->create([
+        'metadata' => ['balance' => 'manual'],
+        'status' => 'idle',
+    ]);
+
+    Livewire::test(WorkersList::class)
+        ->assertSee('Scale Up')
+        ->assertSee('Scale Down')
+        ->assertSee('Terminate');
+});
+
+it('hides scale buttons for fixed balance supervisor', function () {
+    ZenithProcess::factory()->fixedBalance()->create(['status' => 'idle']);
+
+    Livewire::test(WorkersList::class)
+        ->assertDontSee('Scale Up')
+        ->assertDontSee('Scale Down')
+        ->assertSee('Terminate');
+});
+
+it('hides scale buttons for automatic balance supervisor', function () {
+    ZenithProcess::factory()->automaticBalance()->create(['status' => 'idle']);
+
+    Livewire::test(WorkersList::class)
+        ->assertDontSee('Scale Up')
+        ->assertDontSee('Scale Down')
+        ->assertSee('Terminate');
+});
