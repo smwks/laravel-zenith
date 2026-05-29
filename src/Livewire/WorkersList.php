@@ -25,6 +25,11 @@ class WorkersList extends Component
     public function scaleUp(string $processId): void
     {
         $process = ZenithProcess::find($processId);
+
+        if (($process->metadata['balance'] ?? 'fixed') !== 'manual') {
+            return;
+        }
+
         $actions = $process->heartbeat_actions ?? [];
         $actions[] = 'scale_up';
         $process->update(['heartbeat_actions' => $actions]);
@@ -33,6 +38,11 @@ class WorkersList extends Component
     public function scaleDown(string $processId): void
     {
         $process = ZenithProcess::find($processId);
+
+        if (($process->metadata['balance'] ?? 'fixed') !== 'manual') {
+            return;
+        }
+
         $actions = $process->heartbeat_actions ?? [];
         $actions[] = 'scale_down';
         $process->update(['heartbeat_actions' => $actions]);
