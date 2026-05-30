@@ -9,12 +9,14 @@ use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Queue\Events\Looping;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use SMWks\LaravelZenith\Commands\MonitorCommand;
 use SMWks\LaravelZenith\Commands\PruneCommand;
 use SMWks\LaravelZenith\Commands\WorkChildCommand;
 use SMWks\LaravelZenith\Commands\WorkCommand;
+use SMWks\LaravelZenith\Http\Policies\ZenithPolicy;
 use SMWks\LaravelZenith\Listeners\JobExceptionOccurredListener;
 use SMWks\LaravelZenith\Listeners\JobFailedListener;
 use SMWks\LaravelZenith\Listeners\JobProcessedListener;
@@ -26,6 +28,7 @@ use SMWks\LaravelZenith\Livewire\JobsList;
 use SMWks\LaravelZenith\Livewire\WorkersList;
 use SMWks\LaravelZenith\Services\MetricsService;
 use SMWks\LaravelZenith\Services\ZenithJobService;
+use SMWks\LaravelZenith\Zenith;
 
 class ZenithServiceProvider extends ServiceProvider
 {
@@ -41,6 +44,8 @@ class ZenithServiceProvider extends ServiceProvider
 
     public function boot()
     {
+        Gate::policy(Zenith::class, ZenithPolicy::class);
+
         // Publish config, views, and migrations
         $this->publishes([
             __DIR__.'/../config/zenith.php' => config_path('zenith.php'),
