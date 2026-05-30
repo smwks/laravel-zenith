@@ -5,6 +5,7 @@ namespace SMWks\LaravelZenith\Livewire;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use SMWks\LaravelZenith\Models\ZenithProcess;
+use SMWks\LaravelZenith\Zenith;
 
 class WorkersList extends Component
 {
@@ -24,6 +25,8 @@ class WorkersList extends Component
 
     public function scaleUp(string $processId): void
     {
+        $this->authorize('manage', Zenith::class);
+
         $process = ZenithProcess::find($processId);
 
         if (($process->metadata['balance'] ?? 'fixed') !== 'manual') {
@@ -37,6 +40,8 @@ class WorkersList extends Component
 
     public function scaleDown(string $processId): void
     {
+        $this->authorize('manage', Zenith::class);
+
         $process = ZenithProcess::find($processId);
 
         if (($process->metadata['balance'] ?? 'fixed') !== 'manual') {
@@ -50,6 +55,8 @@ class WorkersList extends Component
 
     public function terminate(string $processId): void
     {
+        $this->authorize('manage', Zenith::class);
+
         $process = ZenithProcess::find($processId);
         $actions = $process->heartbeat_actions ?? [];
         $actions[] = 'terminate';
