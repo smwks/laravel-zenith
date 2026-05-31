@@ -166,3 +166,41 @@ it('shows Terminate button when auth middleware is configured', function () {
         ->assertSeeHtml('wire:click="scaleUp(')
         ->assertSeeHtml('wire:click="scaleDown(');
 });
+
+use Illuminate\Support\Facades\DB;
+
+it('hides Retry and Delete buttons in read-only mode', function () {
+    DB::table('failed_jobs')->insert([
+        'uuid' => '123e4567-e89b-12d3-a456-426614174000',
+        'connection' => 'database',
+        'queue' => 'default',
+        'payload' => json_encode(['displayName' => 'TestJob']),
+        'exception' => 'RuntimeException: Test error',
+        'failed_at' => now(),
+    ]);
+
+    config()->set('zenith.route.middleware', ['web']);
+
+    Livewire::test(FailedJobsList::class)
+        ->assertDontSeeHtml('wire:click="retryJob(')
+        ->assertDontSeeHtml('wire:click="retryAll"')
+        ->assertDontSeeHtml('wire:click="deleteJob(');
+})->group('failed-jobs');
+
+it('shows Retry and Delete buttons when auth middleware is configured', function () {
+    DB::table('failed_jobs')->insert([
+        'uuid' => '223e4567-e89b-12d3-a456-426614174001',
+        'connection' => 'database',
+        'queue' => 'default',
+        'payload' => json_encode(['displayName' => 'TestJob']),
+        'exception' => 'RuntimeException: Test error',
+        'failed_at' => now(),
+    ]);
+
+    config()->set('zenith.route.middleware', ['web', 'auth']);
+
+    Livewire::test(FailedJobsList::class)
+        ->assertSeeHtml('wire:click="retryJob(')
+        ->assertSeeHtml('wire:click="retryAll"')
+        ->assertSeeHtml('wire:click="deleteJob(');
+})->group('failed-jobs');
