@@ -65,3 +65,44 @@ it('blocks WorkersList terminate in read-only mode', function () {
 
     expect($supervisor->fresh()->heartbeat_actions)->toBeNull();
 });
+
+use Illuminate\Support\Facades\Schema;
+use SMWks\LaravelZenith\Livewire\FailedJobsList;
+
+beforeEach(function () {
+    if (! Schema::hasTable('failed_jobs')) {
+        Schema::create('failed_jobs', function ($table) {
+            $table->id();
+            $table->string('uuid')->unique();
+            $table->text('connection');
+            $table->text('queue');
+            $table->longText('payload');
+            $table->longText('exception');
+            $table->timestamp('failed_at')->useCurrent();
+        });
+    }
+})->group('failed-jobs');
+
+it('blocks FailedJobsList retryJob in read-only mode', function () {
+    config()->set('zenith.route.middleware', ['web']);
+
+    Livewire::test(FailedJobsList::class)
+        ->call('retryJob', 1)
+        ->assertForbidden();
+})->group('failed-jobs');
+
+it('blocks FailedJobsList retryAll in read-only mode', function () {
+    config()->set('zenith.route.middleware', ['web']);
+
+    Livewire::test(FailedJobsList::class)
+        ->call('retryAll')
+        ->assertForbidden();
+})->group('failed-jobs');
+
+it('blocks FailedJobsList deleteJob in read-only mode', function () {
+    config()->set('zenith.route.middleware', ['web']);
+
+    Livewire::test(FailedJobsList::class)
+        ->call('deleteJob', 1)
+        ->assertForbidden();
+})->group('failed-jobs');

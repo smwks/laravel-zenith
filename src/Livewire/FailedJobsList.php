@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 use SMWks\LaravelZenith\Services\ZenithJobService;
+use SMWks\LaravelZenith\Zenith;
 
 class FailedJobsList extends Component
 {
@@ -15,12 +16,16 @@ class FailedJobsList extends Component
 
     public function retryJob(int $id, ZenithJobService $jobService)
     {
+        $this->authorize('manage', Zenith::class);
+
         $jobService->retryFailedJob($id);
         session()->flash('message', 'Job retried successfully');
     }
 
     public function retryAll(ZenithJobService $jobService)
     {
+        $this->authorize('manage', Zenith::class);
+
         $queue = $this->queue ?: null;
         $count = $jobService->retryAllFailedJobs($queue);
         session()->flash('message', "Retried {$count} job(s) successfully");
@@ -28,6 +33,8 @@ class FailedJobsList extends Component
 
     public function deleteJob(int $id, ZenithJobService $jobService)
     {
+        $this->authorize('manage', Zenith::class);
+
         $jobService->deleteFailedJob($id);
         session()->flash('message', 'Job deleted successfully');
     }
