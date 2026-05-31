@@ -6,8 +6,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use SMWks\LaravelZenith\Models\ZenithHistory;
 use SMWks\LaravelZenith\Services\ZenithJobService;
+use SMWks\LaravelZenith\Zenith;
 
 class JobsController extends Controller
 {
@@ -86,6 +88,8 @@ class JobsController extends Controller
 
     public function cancel(int $id): JsonResponse
     {
+        Gate::authorize('manage', Zenith::class);
+
         $success = $this->jobService->cancelJob($id);
 
         if (! $success) {
@@ -97,6 +101,8 @@ class JobsController extends Controller
 
     public function retry(int $id): JsonResponse
     {
+        Gate::authorize('manage', Zenith::class);
+
         $success = $this->jobService->retryFailedJob($id);
 
         if (! $success) {
@@ -108,6 +114,8 @@ class JobsController extends Controller
 
     public function retryAll(Request $request): JsonResponse
     {
+        Gate::authorize('manage', Zenith::class);
+
         $queue = $request->get('queue');
         $count = $this->jobService->retryAllFailedJobs($queue);
 
@@ -119,6 +127,8 @@ class JobsController extends Controller
 
     public function delete(int $id): JsonResponse
     {
+        Gate::authorize('manage', Zenith::class);
+
         $success = $this->jobService->deleteFailedJob($id);
 
         if (! $success) {
