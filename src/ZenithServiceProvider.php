@@ -28,7 +28,6 @@ use SMWks\LaravelZenith\Livewire\JobsList;
 use SMWks\LaravelZenith\Livewire\WorkersList;
 use SMWks\LaravelZenith\Services\MetricsService;
 use SMWks\LaravelZenith\Services\ZenithJobService;
-use SMWks\LaravelZenith\Zenith;
 
 class ZenithServiceProvider extends ServiceProvider
 {
