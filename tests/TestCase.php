@@ -35,6 +35,7 @@ class TestCase extends Orchestra
             'prefix' => '',
         ]);
         config()->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
+        config()->set('cache.default', 'array');
 
         (include __DIR__.'/../database/migrations/create_zenith_tables.php')->up();
     }

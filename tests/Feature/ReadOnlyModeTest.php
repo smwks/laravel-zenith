@@ -138,3 +138,31 @@ it('returns 403 for failed job delete endpoint in read-only mode', function () {
         ->delete(route('zenith.api.jobs.delete', ['id' => 1]))
         ->assertForbidden();
 });
+
+it('hides Terminate button in read-only mode', function () {
+    config()->set('zenith.route.middleware', ['web']);
+
+    ZenithProcess::factory()->create([
+        'metadata' => ['balance' => 'manual'],
+        'status' => 'idle',
+    ]);
+
+    Livewire::test(WorkersList::class)
+        ->assertDontSeeHtml('wire:click="terminate(')
+        ->assertDontSeeHtml('wire:click="scaleUp(')
+        ->assertDontSeeHtml('wire:click="scaleDown(');
+});
+
+it('shows Terminate button when auth middleware is configured', function () {
+    config()->set('zenith.route.middleware', ['web', 'auth']);
+
+    ZenithProcess::factory()->create([
+        'metadata' => ['balance' => 'manual'],
+        'status' => 'idle',
+    ]);
+
+    Livewire::test(WorkersList::class)
+        ->assertSeeHtml('wire:click="terminate(')
+        ->assertSeeHtml('wire:click="scaleUp(')
+        ->assertSeeHtml('wire:click="scaleDown(');
+});
