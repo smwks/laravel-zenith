@@ -106,3 +106,35 @@ it('blocks FailedJobsList deleteJob in read-only mode', function () {
         ->call('deleteJob', 1)
         ->assertForbidden();
 })->group('failed-jobs');
+
+it('returns 403 for job cancel endpoint in read-only mode', function () {
+    config()->set('zenith.route.middleware', ['web']);
+
+    $this->withoutMiddleware()
+        ->delete(route('zenith.api.jobs.cancel', ['id' => 1]))
+        ->assertForbidden();
+});
+
+it('returns 403 for job retry endpoint in read-only mode', function () {
+    config()->set('zenith.route.middleware', ['web']);
+
+    $this->withoutMiddleware()
+        ->post(route('zenith.api.jobs.retry', ['id' => 1]))
+        ->assertForbidden();
+});
+
+it('returns 403 for job retry-all endpoint in read-only mode', function () {
+    config()->set('zenith.route.middleware', ['web']);
+
+    $this->withoutMiddleware()
+        ->post(route('zenith.api.jobs.retryAll'))
+        ->assertForbidden();
+});
+
+it('returns 403 for failed job delete endpoint in read-only mode', function () {
+    config()->set('zenith.route.middleware', ['web']);
+
+    $this->withoutMiddleware()
+        ->delete(route('zenith.api.jobs.delete', ['id' => 1]))
+        ->assertForbidden();
+});
