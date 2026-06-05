@@ -30,15 +30,24 @@ class JobsList extends Component
 
     public function dispatchTestJob(): void
     {
+        abort_unless($this->testDispatchingAllowed(), 403);
+
         ZenithTestJob::dispatch($this->singleLogging);
         session()->flash('message', 'Test job dispatched successfully');
     }
 
     public function dispatchTestBatch(): void
     {
+        abort_unless($this->testDispatchingAllowed(), 403);
+
         $jobs = array_fill(0, $this->batchCount, new ZenithTestJob($this->batchLogging));
         Bus::batch($jobs)->name('Zenith Test Batch')->dispatch();
         session()->flash('message', "Test batch of {$this->batchCount} jobs dispatched successfully");
+    }
+
+    protected function testDispatchingAllowed(): bool
+    {
+        return config('zenith.allow_test_dispatching') ?? app()->isLocal();
     }
 
     public function retryJob(int $id, ZenithJobService $jobService): void
@@ -61,6 +70,11 @@ class JobsList extends Component
 
     public function render()
     {
+        if ($this->tab === 'tests' && ! $this->testDispatchingAllowed()) {
+            $this->tab = 'pending';
+        }
+
+
         $jobs = match ($this->tab) {
             'completed' => ZenithHistory::completed()->orderBy('completed_at', 'desc')->paginate(15),
             'failed' => DB::table('failed_jobs')

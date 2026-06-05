@@ -49,13 +49,16 @@ class WorkCommand extends Command
 
         $supervisor = null;
         $workers = [];
+        $pendingScaleDowns = 0;
+        $configuredMin = $minWorkers;
+        $configuredMax = $maxWorkers;
         $sp = new SuperProcess;
 
         $sp->command($this->buildQueueWorkCommand($resolvedQueue))
             ->scaleLimits(min: $minWorkers, max: $maxWorkers)
             ->heartbeat(
                 intervalSeconds: config('zenith.heartbeat_interval', 30),
-                callback: function () use (&$supervisor, &$workers, &$minWorkers, &$maxWorkers, $balance, $jobsPerWorker, $resolvedQueue, $resolvedConnection, $sp): void {
+                callback: function () use (&$supervisor, &$workers, &$minWorkers, &$maxWorkers, &$pendingScaleDowns, $balance, $configuredMin, $configuredMax, $jobsPerWorker, $resolvedQueue, $resolvedConnection, $sp): void {
                     $supervisor?->update(['last_heartbeat_at' => now()]);
 
                     foreach ($workers as $worker) {
@@ -66,12 +69,19 @@ class WorkCommand extends Command
 
                     foreach ($supervisor?->heartbeat_actions ?? [] as $action) {
                         if ($action === 'scale_up' && $balance === 'manual') {
+                            if (count($workers) >= $configuredMax) {
+                                continue;
+                            }
                             $minWorkers++;
                             $maxWorkers++;
                             $sp->scaleLimits($minWorkers, $maxWorkers)->scaleUp();
                         } elseif ($action === 'scale_down' && $balance === 'manual') {
+                            if (count($workers) <= $configuredMin) {
+                                continue;
+                            }
                             $minWorkers = max(0, $minWorkers - 1);
                             $maxWorkers = max(0, $maxWorkers - 1);
+                            $pendingScaleDowns++;
                             $sp->scaleLimits($minWorkers, $maxWorkers)->scaleDown();
                         } elseif ($action === 'terminate') {
                             $sp->scaleLimits(0, 0);
@@ -105,7 +115,7 @@ class WorkCommand extends Command
                     $workers[$child->pid] = ZenithProcess::find($message['worker_id']);
                 }
             })
-            ->onChildExit(function (Child $child, ExitReason $reason) use ($sp, &$workers): void {
+            ->onChildExit(function (Child $child, ExitReason $reason) use ($sp, &$workers, &$pendingScaleDowns): void {
                 $process = $workers[$child->pid]
                     ?? ZenithProcess::workerType()->where('pid', $child->pid)->where('hostname', gethostname())->first();
 
@@ -113,6 +123,12 @@ class WorkCommand extends Command
                 unset($workers[$child->pid]);
 
                 if ($reason === ExitReason::Killed) {
+                    return;
+                }
+
+                if ($pendingScaleDowns > 0) {
+                    $pendingScaleDowns--;
+
                     return;
                 }
 

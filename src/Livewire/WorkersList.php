@@ -14,9 +14,27 @@ class WorkersList extends Component
 
     public function render()
     {
-        $supervisors = $this->tab === 'active'
-            ? ZenithProcess::supervisorType()->active()->with('childWorkers')->orderBy('started_at', 'desc')->get()
-            : ZenithProcess::supervisorType()->where('status', 'terminated')->with('childWorkers')->orderBy('started_at', 'desc')->get();
+        if ($this->tab === 'active') {
+            $supervisors = ZenithProcess::supervisorType()->active()
+                ->with(['childWorkers' => fn ($q) => $q->where('status', '!=', 'terminated')])
+                ->orderBy('started_at', 'desc')
+                ->get();
+        } else {
+            $terminatedSupervisors = ZenithProcess::supervisorType()
+                ->where('status', 'terminated')
+                ->with('childWorkers')
+                ->orderBy('started_at', 'desc')
+                ->get();
+
+            $activeSupervisorsWithTerminatedWorkers = ZenithProcess::supervisorType()
+                ->active()
+                ->whereHas('childWorkers', fn ($q) => $q->where('status', 'terminated'))
+                ->with(['childWorkers' => fn ($q) => $q->where('status', 'terminated')])
+                ->orderBy('started_at', 'desc')
+                ->get();
+
+            $supervisors = $activeSupervisorsWithTerminatedWorkers->merge($terminatedSupervisors);
+        }
 
         return view('laravel-zenith::livewire.workers-list', [
             'supervisors' => $supervisors,
@@ -27,9 +45,17 @@ class WorkersList extends Component
     {
         $this->authorize('manage', Zenith::class);
 
-        $process = ZenithProcess::find($processId);
+        $process = ZenithProcess::with(['childWorkers' => fn ($q) => $q->where('status', '!=', 'terminated')])->find($processId);
 
         if (($process->metadata['balance'] ?? 'fixed') !== 'manual') {
+            return;
+        }
+
+        $maxWorkers = (int) ($process->metadata['max_workers'] ?? PHP_INT_MAX);
+        $pending = array_count_values($process->heartbeat_actions ?? []);
+        $effectiveCount = $process->childWorkers->count() + ($pending['scale_up'] ?? 0) - ($pending['scale_down'] ?? 0);
+
+        if ($effectiveCount >= $maxWorkers) {
             return;
         }
 
@@ -42,9 +68,17 @@ class WorkersList extends Component
     {
         $this->authorize('manage', Zenith::class);
 
-        $process = ZenithProcess::find($processId);
+        $process = ZenithProcess::with(['childWorkers' => fn ($q) => $q->where('status', '!=', 'terminated')])->find($processId);
 
         if (($process->metadata['balance'] ?? 'fixed') !== 'manual') {
+            return;
+        }
+
+        $minWorkers = (int) ($process->metadata['min_workers'] ?? 0);
+        $pending = array_count_values($process->heartbeat_actions ?? []);
+        $effectiveCount = $process->childWorkers->count() + ($pending['scale_up'] ?? 0) - ($pending['scale_down'] ?? 0);
+
+        if ($effectiveCount <= $minWorkers) {
             return;
         }
 

@@ -126,4 +126,16 @@ return [
     */
     'database_connection' => env('ZENITH_DB_CONNECTION', null),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Allow Test Job Dispatching
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, the Tests tab appears in the Jobs UI allowing test jobs and
+    | batches to be dispatched directly from the dashboard. Defaults to true
+    | in local environments only.
+    |
+    */
+    'allow_test_dispatching' => env('ZENITH_ALLOW_TEST_DISPATCHING', null),
+
 ];

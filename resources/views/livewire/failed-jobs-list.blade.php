@@ -64,7 +64,7 @@
                                         {{ Str::limit($job->exception, 200) }}
                                     </p>
                                     <p class="text-xs text-gray-500 mt-1">
-                                        Failed {{ \Carbon\Carbon::parse($job->failed_at)->diffForHumans() }}
+                                        Failed <span title="{{ \Carbon\Carbon::parse($job->failed_at)->toDateTimeString() }}">{{ \Carbon\Carbon::parse($job->failed_at)->diffForHumans() }}</span>
                                     </p>
                                 </div>
                             </div>

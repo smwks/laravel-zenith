@@ -18,9 +18,11 @@
             <button wire:click="$set('tab', 'batches')" class="{{ $tab === 'batches' ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                 Batches
             </button>
-            <button wire:click="$set('tab', 'tests')" class="{{ $tab === 'tests' ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-                Tests
-            </button>
+            @if(config('zenith.allow_test_dispatching') ?? app()->isLocal())
+                <button wire:click="$set('tab', 'tests')" class="{{ $tab === 'tests' ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    Tests
+                </button>
+            @endif
         </nav>
     </div>
 
@@ -75,7 +77,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $job->attempts }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" title="{{ \Carbon\Carbon::createFromTimestamp($job->created_at)->toDateTimeString() }}">
                                     {{ \Carbon\Carbon::createFromTimestamp($job->created_at)->diffForHumans() }}
                                 </td>
                             </tr>
@@ -130,7 +132,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $job->processing_time ?? '-' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" title="{{ $job->completed_at->toDateTimeString() }}">
                                     {{ $job->completed_at->diffForHumans() }}
                                 </td>
                             </tr>
@@ -203,7 +205,7 @@
                                             {{ Str::limit($job->exception, 200) }}
                                         </p>
                                         <p class="text-xs text-gray-500 mt-1">
-                                            Failed {{ \Carbon\Carbon::parse($job->failed_at)->diffForHumans() }}
+                                            Failed <span title="{{ \Carbon\Carbon::parse($job->failed_at)->toDateTimeString() }}">{{ \Carbon\Carbon::parse($job->failed_at)->diffForHumans() }}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -227,7 +229,7 @@
         @endif
     @endif
 
-    @if($tab === 'tests')
+    @if($tab === 'tests' && (config('zenith.allow_test_dispatching') ?? app()->isLocal()))
         @if(session()->has('message'))
             <div class="mb-4 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded relative" role="alert">
                 <span class="block sm:inline">{{ session('message') }}</span>
@@ -320,10 +322,10 @@
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-600">Running</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" title="{{ \Carbon\Carbon::createFromTimestamp($batch->created_at)->toDateTimeString() }}">
                                     {{ \Carbon\Carbon::createFromTimestamp($batch->created_at)->diffForHumans() }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" title="{{ $batch->finished_at ? \Carbon\Carbon::createFromTimestamp($batch->finished_at)->toDateTimeString() : '' }}">
                                     {{ $batch->finished_at ? \Carbon\Carbon::createFromTimestamp($batch->finished_at)->diffForHumans() : '-' }}
                                 </td>
                             </tr>
