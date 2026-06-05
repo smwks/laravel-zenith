@@ -33,7 +33,7 @@ class JobProcessedListener
             ->first();
 
         $processingTimeMs = $startEvent
-            ? $startEvent->created_at->diffInMilliseconds(now())
+            ? (int) $startEvent->created_at->diffInMilliseconds(now())
             : null;
 
         ZenithEvent::create([
