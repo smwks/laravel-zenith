@@ -74,7 +74,6 @@ class JobsList extends Component
             $this->tab = 'pending';
         }
 
-
         $jobs = match ($this->tab) {
             'completed' => ZenithHistory::completed()->orderBy('completed_at', 'desc')->paginate(15),
             'failed' => DB::table('failed_jobs')
