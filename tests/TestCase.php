@@ -37,6 +37,7 @@ class TestCase extends Orchestra
         config()->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
         config()->set('cache.default', 'array');
 
-        (include __DIR__.'/../database/migrations/create_zenith_tables.php')->up();
+        (include __DIR__.'/../database/migrations/2024_01_01_000001_create_zenith_tables.php')->up();
+        (include __DIR__.'/../database/migrations/2024_01_01_000002_add_abandoned_status_to_zenith_processes.php')->up();
     }
 }

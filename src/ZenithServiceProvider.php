@@ -54,9 +54,11 @@ class ZenithServiceProvider extends ServiceProvider
             __DIR__.'/../resources/views' => resource_path('views/vendor/laravel-zenith'),
         ], 'zenith-views');
 
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+
         $this->publishes([
-            __DIR__.'/../database/migrations/create_zenith_tables.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_zenith_tables.php'),
-            __DIR__.'/../database/migrations/add_abandoned_status_to_zenith_processes.php' => database_path('migrations/'.date('Y_m_d_His', time() + 1).'_add_abandoned_status_to_zenith_processes.php'),
+            __DIR__.'/../database/migrations/2024_01_01_000001_create_zenith_tables.php' => database_path('migrations/2024_01_01_000001_create_zenith_tables.php'),
+            __DIR__.'/../database/migrations/2024_01_01_000002_add_abandoned_status_to_zenith_processes.php' => database_path('migrations/2024_01_01_000002_add_abandoned_status_to_zenith_processes.php'),
         ], 'zenith-migrations');
 
         // Load views
