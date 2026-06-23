@@ -91,8 +91,8 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" title="{{ $supervisor->started_at->toDateTimeString() }}">
                                 {{ $supervisor->started_at->diffForHumans(null, true) }}
                             </td>
+                            @if($tab === 'active')
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                @if($tab === 'active')
                                     @can('manage', \SMWks\LaravelZenith\Zenith::class)
                                         <div class="flex space-x-2">
                                                             @if(($supervisor->metadata['balance'] ?? 'fixed') === 'manual')
@@ -118,8 +118,8 @@
                                             </button>
                                         </div>
                                     @endcan
-                                @endif
                             </td>
+                            @endif
                         </tr>
                         @foreach($supervisor->childWorkers as $worker)
                             <tr class="{{ !$worker->isHealthy() ? 'bg-red-50' : 'bg-white' }}">
