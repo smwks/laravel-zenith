@@ -52,7 +52,7 @@ class MonitorCommand extends Command
             }
 
             $worker->update([
-                'status' => 'terminated',
+                'status' => 'abandoned',
                 'current_job_id' => null,
             ]);
         } else {

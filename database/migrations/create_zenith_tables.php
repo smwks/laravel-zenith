@@ -24,7 +24,7 @@ return new class extends Migration
             $table->timestamp('started_at');
             $table->timestamp('last_heartbeat_at');
             $table->unsignedBigInteger('current_job_id')->nullable();
-            $table->enum('status', ['idle', 'working', 'terminated'])->default('idle')->index();
+            $table->enum('status', ['idle', 'working', 'terminated', 'abandoned'])->default('idle')->index();
             $table->unsignedInteger('jobs_completed')->default(0);
             $table->unsignedInteger('jobs_failed')->default(0);
             $table->json('metadata')->nullable();

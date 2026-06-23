@@ -35,7 +35,7 @@ class WorkersController extends Controller
             'data' => $workers,
             'meta' => [
                 'total' => $workers->count(),
-                'active' => $workers->where('status', '!=', 'terminated')->count(),
+                'active' => $workers->whereNotIn('status', ['terminated', 'abandoned'])->count(),
             ],
         ]);
     }

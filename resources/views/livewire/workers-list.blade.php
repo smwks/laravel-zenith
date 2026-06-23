@@ -4,7 +4,7 @@
         <p class="mt-1 text-sm text-gray-500">Active and terminated supervisors with their worker processes</p>
     </div>
 
-    <div class="border-b border-gray-200 mb-6">
+    <div class="border-b border-gray-200 mb-6 flex items-end justify-between">
         <nav class="-mb-px flex space-x-8">
             <button wire:click="$set('tab', 'active')" class="{{ $tab === 'active' ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                 Active
@@ -13,6 +13,16 @@
                 Terminated
             </button>
         </nav>
+        @if($hasStale)
+            @can('manage', \SMWks\LaravelZenith\Zenith::class)
+                <div class="pb-3">
+                    <button wire:click="cleanUpStale" wire:loading.attr="disabled" wire:loading.class="opacity-50 cursor-not-allowed" wire:confirm="Mark all stale processes as terminated?" class="px-3 py-1.5 text-xs font-medium rounded bg-red-100 text-red-700 hover:bg-red-200">
+                        <span wire:loading.remove wire:target="cleanUpStale">Clean Up Stale</span>
+                        <span wire:loading wire:target="cleanUpStale">Cleaning…</span>
+                    </button>
+                </div>
+            @endcan
+        @endif
     </div>
 
     @if($supervisors->isEmpty())
@@ -60,6 +70,8 @@
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Idle</span>
                                 @elseif($supervisor->status === 'working')
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Working</span>
+                                @elseif($supervisor->status === 'abandoned')
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">Abandoned</span>
                                 @else
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Terminated</span>
                                 @endif
@@ -121,6 +133,8 @@
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Working</span>
                                     @elseif($worker->status === 'idle')
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Idle</span>
+                                    @elseif($worker->status === 'abandoned')
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">Abandoned</span>
                                     @else
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Terminated</span>
                                     @endif

@@ -56,6 +56,7 @@ class ZenithServiceProvider extends ServiceProvider
 
         $this->publishes([
             __DIR__.'/../database/migrations/create_zenith_tables.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_zenith_tables.php'),
+            __DIR__.'/../database/migrations/add_abandoned_status_to_zenith_processes.php' => database_path('migrations/'.date('Y_m_d_His', time() + 1).'_add_abandoned_status_to_zenith_processes.php'),
         ], 'zenith-migrations');
 
         // Load views

@@ -65,6 +65,11 @@ class WorkCommand extends Command
                         $worker?->update(['last_heartbeat_at' => now()]);
                     }
 
+                    ZenithProcess::where('hostname', '!=', gethostname())
+                        ->whereNotIn('status', ['terminated', 'abandoned'])
+                        ->where('last_heartbeat_at', '<', now()->subSeconds(config('zenith.heartbeat_interval', 30) * 2))
+                        ->update(['status' => 'abandoned']);
+
                     $supervisor?->refresh();
 
                     foreach ($supervisor?->heartbeat_actions ?? [] as $action) {
@@ -167,6 +172,11 @@ class WorkCommand extends Command
 
     protected function registerSupervisor(string $balance, int $minWorkers, int $maxWorkers, ?string $resolvedQueue, string $resolvedConnection): ZenithProcess
     {
+        ZenithProcess::where('hostname', '!=', gethostname())
+            ->whereNotIn('status', ['terminated', 'abandoned'])
+            ->where('last_heartbeat_at', '<', now()->subSeconds(config('zenith.heartbeat_interval', 30) * 2))
+            ->update(['status' => 'abandoned']);
+
         return ZenithProcess::create([
             'type' => 'supervisor',
             'name' => $this->option('name'),

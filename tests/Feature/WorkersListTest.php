@@ -38,6 +38,12 @@ it('appends scale_down action for manual balance supervisor', function () {
         'metadata' => ['balance' => 'manual'],
     ]);
 
+    ZenithProcess::factory()->create([
+        'type' => 'worker',
+        'supervisor_pid' => $supervisor->pid,
+        'status' => 'idle',
+    ]);
+
     Livewire::test(WorkersList::class)
         ->call('scaleDown', $supervisor->id);
 

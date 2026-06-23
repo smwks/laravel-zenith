@@ -14,6 +14,12 @@ class WorkersList extends Component
 
     public function render()
     {
+        $staleThreshold = now()->subSeconds(config('zenith.heartbeat_interval', 30) * 2);
+
+        $hasStale = ZenithProcess::whereNotIn('status', ['terminated', 'abandoned'])
+            ->where('last_heartbeat_at', '<', $staleThreshold)
+            ->exists();
+
         if ($this->tab === 'active') {
             $supervisors = ZenithProcess::supervisorType()->active()
                 ->with(['childWorkers' => fn ($q) => $q->where('status', '!=', 'terminated')])
@@ -21,7 +27,7 @@ class WorkersList extends Component
                 ->get();
         } else {
             $terminatedSupervisors = ZenithProcess::supervisorType()
-                ->where('status', 'terminated')
+                ->whereIn('status', ['terminated', 'abandoned'])
                 ->with('childWorkers')
                 ->orderBy('started_at', 'desc')
                 ->get();
@@ -38,7 +44,17 @@ class WorkersList extends Component
 
         return view('laravel-zenith::livewire.workers-list', [
             'supervisors' => $supervisors,
+            'hasStale' => $hasStale,
         ])->layout('laravel-zenith::layout', ['title' => 'Workers']);
+    }
+
+    public function cleanUpStale(): void
+    {
+        $this->authorize('manage', Zenith::class);
+
+        ZenithProcess::whereNotIn('status', ['terminated', 'abandoned'])
+            ->where('last_heartbeat_at', '<', now()->subSeconds(config('zenith.heartbeat_interval', 30) * 2))
+            ->update(['status' => 'abandoned']);
     }
 
     public function scaleUp(string $processId): void
