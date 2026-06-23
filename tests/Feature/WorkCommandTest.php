@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\ArrayInput;
 
 function invokeRegisterSupervisor(): void
 {
-    $command = new WorkCommand();
+    $command = new WorkCommand;
     $command->setLaravel(app());
 
     $input = new ArrayInput([], $command->getDefinition());
