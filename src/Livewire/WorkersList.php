@@ -22,22 +22,34 @@ class WorkersList extends Component
 
         if ($this->tab === 'active') {
             $supervisors = ZenithProcess::supervisorType()->active()
-                ->with(['childWorkers' => fn ($q) => $q->where('status', '!=', 'terminated')])
+                ->with(['childWorkers' => fn ($q) => $q->whereNotIn('status', ['terminated', 'abandoned'])])
                 ->orderBy('started_at', 'desc')
-                ->get();
+                ->get()
+                ->each(fn ($s) => $s->setRelation(
+                    'childWorkers',
+                    $s->childWorkers->where('hostname', $s->hostname)->values()
+                ));
         } else {
             $terminatedSupervisors = ZenithProcess::supervisorType()
                 ->whereIn('status', ['terminated', 'abandoned'])
                 ->with('childWorkers')
                 ->orderBy('started_at', 'desc')
-                ->get();
+                ->get()
+                ->each(fn ($s) => $s->setRelation(
+                    'childWorkers',
+                    $s->childWorkers->where('hostname', $s->hostname)->values()
+                ));
 
             $activeSupervisorsWithTerminatedWorkers = ZenithProcess::supervisorType()
                 ->active()
-                ->whereHas('childWorkers', fn ($q) => $q->where('status', 'terminated'))
-                ->with(['childWorkers' => fn ($q) => $q->where('status', 'terminated')])
+                ->with(['childWorkers' => fn ($q) => $q->whereIn('status', ['terminated', 'abandoned'])])
                 ->orderBy('started_at', 'desc')
-                ->get();
+                ->get()
+                ->map(fn ($s) => $s->setRelation(
+                    'childWorkers',
+                    $s->childWorkers->where('hostname', $s->hostname)->values()
+                ))
+                ->filter(fn ($s) => $s->childWorkers->isNotEmpty());
 
             $supervisors = $activeSupervisorsWithTerminatedWorkers->merge($terminatedSupervisors);
         }
@@ -61,7 +73,8 @@ class WorkersList extends Component
     {
         $this->authorize('manage', Zenith::class);
 
-        $process = ZenithProcess::with(['childWorkers' => fn ($q) => $q->where('status', '!=', 'terminated')])->find($processId);
+        $process = ZenithProcess::with(['childWorkers' => fn ($q) => $q->whereNotIn('status', ['terminated', 'abandoned'])])->find($processId);
+        $process->setRelation('childWorkers', $process->childWorkers->where('hostname', $process->hostname)->values());
 
         if (($process->metadata['balance'] ?? 'fixed') !== 'manual') {
             return;
@@ -84,7 +97,8 @@ class WorkersList extends Component
     {
         $this->authorize('manage', Zenith::class);
 
-        $process = ZenithProcess::with(['childWorkers' => fn ($q) => $q->where('status', '!=', 'terminated')])->find($processId);
+        $process = ZenithProcess::with(['childWorkers' => fn ($q) => $q->whereNotIn('status', ['terminated', 'abandoned'])])->find($processId);
+        $process->setRelation('childWorkers', $process->childWorkers->where('hostname', $process->hostname)->values());
 
         if (($process->metadata['balance'] ?? 'fixed') !== 'manual') {
             return;
