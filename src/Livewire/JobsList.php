@@ -22,6 +22,8 @@ class JobsList extends Component
 
     public string $queue = '';
 
+    public ?string $expandedId = null;
+
     public bool $singleLogging = false;
 
     public bool $batchLogging = false;
@@ -48,6 +50,11 @@ class JobsList extends Component
     protected function testDispatchingAllowed(): bool
     {
         return config('zenith.allow_test_dispatching') ?? app()->isLocal();
+    }
+
+    public function toggleExpand(string $id): void
+    {
+        $this->expandedId = $this->expandedId === $id ? null : $id;
     }
 
     public function retryJob(int $id, ZenithJobService $jobService): void

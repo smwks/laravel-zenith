@@ -113,15 +113,19 @@
                         @foreach($jobs as $job)
                             @php
                                 $batch = $batchMap->get($job->payload['batchId'] ?? '');
+                                $isExpanded = $expandedId === (string) $job->id;
                             @endphp
-                            <tr>
+                            <tr wire:click="toggleExpand('{{ $job->id }}')" class="cursor-pointer hover:bg-gray-50 {{ $isExpanded ? 'bg-gray-50' : '' }}">
                                 <td class="px-6 py-4 text-sm text-gray-900">
-                                    {{ $job->payload['displayName'] ?? 'Unknown Job' }}
-                                    @if($batch)
-                                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-600">
-                                            Batch: {{ $batch->name }}
-                                        </span>
-                                    @endif
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-3 h-3 text-gray-400 shrink-0 transition-transform {{ $isExpanded ? 'rotate-90' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                        {{ $job->payload['displayName'] ?? 'Unknown Job' }}
+                                        @if($batch)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-600">
+                                                Batch: {{ $batch->name }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $job->queue }}
@@ -136,6 +140,34 @@
                                     {{ $job->completed_at->diffForHumans() }}
                                 </td>
                             </tr>
+                            @if($isExpanded)
+                                <tr class="bg-gray-50">
+                                    <td colspan="5" class="px-6 pb-4 border-b border-gray-100">
+                                        @php
+                                            $displayPayload = $job->payload;
+                                            if (isset($displayPayload['data']['command'])) {
+                                                $displayPayload['data']['command'] = '[serialized]';
+                                            }
+                                        @endphp
+                                        <div class="space-y-3">
+                                            <div>
+                                                <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">UUID</div>
+                                                <code class="text-xs text-gray-700 font-mono">{{ $job->uuid }}</code>
+                                            </div>
+                                            @if($job->metadata)
+                                                <div>
+                                                    <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Metadata</div>
+                                                    <pre class="text-xs text-gray-700 font-mono bg-white border border-gray-200 rounded p-2 overflow-x-auto">{{ json_encode($job->metadata, JSON_PRETTY_PRINT) }}</pre>
+                                                </div>
+                                            @endif
+                                            <div>
+                                                <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Payload</div>
+                                                <pre class="text-xs text-gray-700 font-mono bg-white border border-gray-200 rounded p-2 overflow-x-auto max-h-64">{{ json_encode($displayPayload, JSON_PRETTY_PRINT) }}</pre>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endif
                         @endforeach
                     </tbody>
                 </table>
@@ -181,6 +213,8 @@
                         @php
                             $payload = json_decode($job->payload, true);
                             $displayName = $payload['displayName'] ?? 'Unknown Job';
+                            $failedExpandedId = 'failed-' . $job->id;
+                            $isExpanded = $expandedId === $failedExpandedId;
                         @endphp
                         <li class="px-6 py-4">
                             <div class="flex items-center justify-between">
@@ -210,6 +244,9 @@
                                     </div>
                                 </div>
                                 <div class="flex-shrink-0 flex space-x-2">
+                                    <button wire:click="toggleExpand('{{ $failedExpandedId }}')" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
+                                        {{ $isExpanded ? 'Hide' : 'Details' }}
+                                    </button>
                                     <button wire:click="retryJob({{ $job->id }})" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                         Retry
                                     </button>
@@ -218,6 +255,24 @@
                                     </button>
                                 </div>
                             </div>
+                            @if($isExpanded)
+                                @php
+                                    $displayPayload = $payload;
+                                    if (isset($displayPayload['data']['command'])) {
+                                        $displayPayload['data']['command'] = '[serialized]';
+                                    }
+                                @endphp
+                                <div class="mt-4 space-y-3">
+                                    <div>
+                                        <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Exception</div>
+                                        <pre class="text-xs text-red-700 font-mono bg-red-50 border border-red-200 rounded p-2 overflow-x-auto max-h-64">{{ $job->exception }}</pre>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Payload</div>
+                                        <pre class="text-xs text-gray-700 font-mono bg-white border border-gray-200 rounded p-2 overflow-x-auto max-h-64">{{ json_encode($displayPayload, JSON_PRETTY_PRINT) }}</pre>
+                                    </div>
+                                </div>
+                            @endif
                         </li>
                     @endforeach
                 </ul>
