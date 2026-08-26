@@ -12,12 +12,16 @@ class ZenithTestJob implements ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable;
 
-    public function __construct(public bool $enableLogging = false) {}
+    public function __construct(public bool $enableLogging = false, public int $sleepSeconds = 0) {}
 
     public function handle(): void
     {
         if ($this->enableLogging) {
             logger()->info('Hello World from Zenith at '.now());
+        }
+
+        if ($this->sleepSeconds > 0) {
+            sleep($this->sleepSeconds);
         }
     }
 }

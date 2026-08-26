@@ -297,34 +297,42 @@
         @endif
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white shadow rounded-lg p-6">
+            <div class="bg-white shadow rounded-lg p-6 flex flex-col">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Single Job</h3>
-                <div class="space-y-4">
+                <div class="space-y-4 mb-4">
                     <div class="flex items-center">
                         <input type="checkbox" wire:model="singleLogging" id="singleLogging" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
                         <label for="singleLogging" class="ml-2 block text-sm text-gray-700">Enable Logging</label>
                     </div>
-                    <button wire:click="dispatchTestJob" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Dispatch Job
-                    </button>
+                    <div>
+                        <label for="singleDuration" class="block text-sm font-medium text-gray-700">Duration (seconds)</label>
+                        <input type="number" wire:model="singleDuration" id="singleDuration" min="0" max="30" class="mt-1 block w-24 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
                 </div>
+                <button wire:click="dispatchTestJob" class="mt-auto self-start inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Dispatch Job
+                </button>
             </div>
 
-            <div class="bg-white shadow rounded-lg p-6">
+            <div class="bg-white shadow rounded-lg p-6 flex flex-col">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Batch Job</h3>
-                <div class="space-y-4">
+                <div class="space-y-4 mb-4">
                     <div class="flex items-center">
                         <input type="checkbox" wire:model="batchLogging" id="batchLogging" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
                         <label for="batchLogging" class="ml-2 block text-sm text-gray-700">Enable Logging</label>
                     </div>
                     <div>
-                        <label for="batchCount" class="block text-sm font-medium text-gray-700">Job Count</label>
-                        <input type="number" wire:model="batchCount" id="batchCount" min="1" max="100" class="mt-1 block w-24 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <label for="batchDuration" class="block text-sm font-medium text-gray-700">Duration (seconds)</label>
+                        <input type="number" wire:model="batchDuration" id="batchDuration" min="0" max="30" class="mt-1 block w-24 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                     </div>
-                    <button wire:click="dispatchTestBatch" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Dispatch Batch
-                    </button>
+                    <div>
+                        <label for="batchCount" class="block text-sm font-medium text-gray-700">Job Count</label>
+                        <input type="number" wire:model="batchCount" id="batchCount" min="1" max="100" class="mt-1 block w-24 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
                 </div>
+                <button wire:click="dispatchTestBatch" class="mt-auto self-start inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Dispatch Batch
+                </button>
             </div>
         </div>
     @endif

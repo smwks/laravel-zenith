@@ -30,11 +30,15 @@ class JobsList extends Component
 
     public int $batchCount = 5;
 
+    public int $singleDuration = 0;
+
+    public int $batchDuration = 0;
+
     public function dispatchTestJob(): void
     {
         abort_unless($this->testDispatchingAllowed(), 403);
 
-        ZenithTestJob::dispatch($this->singleLogging);
+        ZenithTestJob::dispatch($this->singleLogging, $this->clampDuration($this->singleDuration));
         session()->flash('message', 'Test job dispatched successfully');
     }
 
@@ -42,9 +46,15 @@ class JobsList extends Component
     {
         abort_unless($this->testDispatchingAllowed(), 403);
 
-        $jobs = array_fill(0, $this->batchCount, new ZenithTestJob($this->batchLogging));
+        $duration = $this->clampDuration($this->batchDuration);
+        $jobs = array_fill(0, $this->batchCount, new ZenithTestJob($this->batchLogging, $duration));
         Bus::batch($jobs)->name('Zenith Test Batch')->dispatch();
         session()->flash('message', "Test batch of {$this->batchCount} jobs dispatched successfully");
+    }
+
+    protected function clampDuration(int $seconds): int
+    {
+        return max(0, min(30, $seconds));
     }
 
     protected function testDispatchingAllowed(): bool
