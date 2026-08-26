@@ -68,6 +68,11 @@
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900">
                                     {{ $displayName }}
+                                    @if($job->reserved_at)
+                                        <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-600" title="Reserved {{ \Carbon\Carbon::createFromTimestamp($job->reserved_at)->toDateTimeString() }}">
+                                            Processing
+                                        </span>
+                                    @endif
                                     @if($batch)
                                         <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-600">
                                             Batch: {{ $batch->name }}
