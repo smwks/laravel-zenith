@@ -138,4 +138,21 @@ return [
     */
     'allow_test_dispatching' => env('ZENITH_ALLOW_TEST_DISPATCHING', null),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Job Tracing (ddtrace)
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, Zenith wraps each job processing attempt in a Datadog APM
+    | span (zenith.job.process) rather than relying on ddtrace's generic
+    | per-event auto-instrumentation, which traces every dispatched Laravel
+    | event as its own resource, including work-free noise like the queue
+    | worker's Looping event. Requires the ddtrace PHP extension; defaults
+    | to auto-detecting whether it's loaded.
+    |
+    */
+    'tracing' => [
+        'enabled' => env('ZENITH_TRACING_ENABLED', null),
+    ],
+
 ];
