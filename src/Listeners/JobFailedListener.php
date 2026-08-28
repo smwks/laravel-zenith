@@ -5,14 +5,22 @@ namespace SMWks\LaravelZenith\Listeners;
 use Illuminate\Queue\Events\JobFailed;
 use SMWks\LaravelZenith\Models\ZenithEvent;
 use SMWks\LaravelZenith\Models\ZenithProcess;
+use SMWks\LaravelZenith\Support\Tracing\Tracer;
 
 class JobFailedListener
 {
+    public function __construct(
+        protected Tracer $tracer
+    ) {}
+
     public function handle(JobFailed $event): void
     {
         if (! config('zenith.enabled', true)) {
             return;
         }
+
+        $this->tracer->tagError($event->exception);
+        $this->tracer->closeSpan();
 
         $payload = json_decode($event->job->getRawBody(), true);
         $uuid = $payload['uuid'] ?? null;

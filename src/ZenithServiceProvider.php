@@ -28,6 +28,9 @@ use SMWks\LaravelZenith\Livewire\JobsList;
 use SMWks\LaravelZenith\Livewire\WorkersList;
 use SMWks\LaravelZenith\Services\MetricsService;
 use SMWks\LaravelZenith\Services\ZenithJobService;
+use SMWks\LaravelZenith\Support\Tracing\DDTraceTracer;
+use SMWks\LaravelZenith\Support\Tracing\NullTracer;
+use SMWks\LaravelZenith\Support\Tracing\Tracer;
 
 class ZenithServiceProvider extends ServiceProvider
 {
@@ -36,6 +39,12 @@ class ZenithServiceProvider extends ServiceProvider
         // Register services
         $this->app->singleton(ZenithJobService::class);
         $this->app->singleton(MetricsService::class);
+
+        $this->app->singleton(Tracer::class, function () {
+            $enabled = (config('zenith.tracing.enabled') ?? extension_loaded('ddtrace')) && extension_loaded('ddtrace');
+
+            return $enabled ? new DDTraceTracer : new NullTracer;
+        });
 
         // Merge config
         $this->mergeConfigFrom(__DIR__.'/../config/zenith.php', 'zenith');

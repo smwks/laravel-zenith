@@ -6,9 +6,14 @@ use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Support\Str;
 use SMWks\LaravelZenith\Models\ZenithEvent;
 use SMWks\LaravelZenith\Models\ZenithProcess;
+use SMWks\LaravelZenith\Support\Tracing\Tracer;
 
 class JobProcessingListener
 {
+    public function __construct(
+        protected Tracer $tracer
+    ) {}
+
     public function handle(JobProcessing $event): void
     {
         if (! config('zenith.enabled', true)) {
@@ -17,6 +22,13 @@ class JobProcessingListener
 
         $payload = json_decode($event->job->getRawBody(), true);
         $uuid = $payload['uuid'] ?? Str::uuid()->toString();
+
+        $this->tracer->startSpan('zenith.job.process', $event->job->resolveName(), [
+            'queue' => $event->job->getQueue(),
+            'connection' => $event->connectionName,
+            'job.uuid' => $uuid,
+            'job.attempts' => $event->job->attempts(),
+        ]);
 
         $worker = ZenithProcess::where('pid', getmypid())
             ->where('hostname', gethostname())

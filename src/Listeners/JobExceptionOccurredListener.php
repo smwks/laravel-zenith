@@ -4,13 +4,23 @@ namespace SMWks\LaravelZenith\Listeners;
 
 use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Support\Facades\Log;
+use SMWks\LaravelZenith\Support\Tracing\Tracer;
 
 class JobExceptionOccurredListener
 {
+    public function __construct(
+        protected Tracer $tracer
+    ) {}
+
     public function handle(JobExceptionOccurred $event): void
     {
         if (! config('zenith.enabled', true)) {
             return;
+        }
+
+        if (! $event->job->hasFailed()) {
+            $this->tracer->tagError($event->exception);
+            $this->tracer->closeSpan();
         }
 
         $payload = json_decode($event->job->getRawBody(), true);

@@ -6,14 +6,21 @@ use Illuminate\Queue\Events\JobProcessed;
 use SMWks\LaravelZenith\Models\ZenithEvent;
 use SMWks\LaravelZenith\Models\ZenithHistory;
 use SMWks\LaravelZenith\Models\ZenithProcess;
+use SMWks\LaravelZenith\Support\Tracing\Tracer;
 
 class JobProcessedListener
 {
+    public function __construct(
+        protected Tracer $tracer
+    ) {}
+
     public function handle(JobProcessed $event): void
     {
         if (! config('zenith.enabled', true)) {
             return;
         }
+
+        $this->tracer->closeSpan();
 
         $payload = json_decode($event->job->getRawBody(), true);
         $uuid = $payload['uuid'] ?? null;
